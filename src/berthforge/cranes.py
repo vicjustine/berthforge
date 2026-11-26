@@ -3,6 +3,8 @@
 A berth's throughput is limited by the cranes assigned to it. Each crane
 moves a fixed number of containers per hour; a berth cannot be served by
 more cranes than its rail length allows.
+
+A berth takes as many cranes as it rail allows, each crane moves 26 boxes an hour. 
 """
 
 CRANE_RATE_PER_HOUR = 26
