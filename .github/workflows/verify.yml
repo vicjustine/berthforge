@@ -1,0 +1,39 @@
+name: verify
+
+on: 
+  workflow_dispatch:
+    inputs:
+      tag: 
+        description: Image tag to verify
+        required: true
+        default: v0.3.0
+      repo:
+        description: Repository to check the signature against
+        required: true
+        default: vicjustine/berthforge
+jobs:
+  attestation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+    steps:
+      - name: Verify provenance
+        env:
+            GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e 
+          gh attestation verify \
+            "oci://ghcr.io/vicjustine/berthforge:${{ inputs.tag }}" \
+            --repo "${{ inputs.repo }}" --format json > out.json 2> err.txt
+          CODE=$?
+          echo "exit code: $CODE"
+          if [ "$CODE" -eq 0]; then
+            jq -r '.[0].verificationResult |
+              "predicate: " + .statement.predicateType,
+              "builder : " + .signature.certificate.buildSignerURI' out.json
+          else 
+            cat err.txt
+          fi
+          exit $CODE
